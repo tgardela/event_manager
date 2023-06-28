@@ -2,7 +2,6 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.test import TestCase
-from rest_framework.exceptions import ValidationError
 
 from events.models import Event
 

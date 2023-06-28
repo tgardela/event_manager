@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.test import TestCase
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from auth.serializers import UserSerializer, RegisterSerializer
 from events.models import Event
+
 
 class UserSerializerTestCase(TestCase):
     def setUp(self):

@@ -3,9 +3,9 @@ from django.urls import (
     include,
     path,
     )
-from rest_framework.routers import DefaultRouter
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from rest_framework.routers import DefaultRouter
 
 from events.views import EventViewSet
 

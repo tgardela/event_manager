@@ -1,10 +1,9 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from auth.views import MyObtainTokenPairView, RegisterView, UserView
-from auth.serializers import MyTokenObtainPairSerializer, RegisterSerializer, UserSerializer
+
 
 factory = APIRequestFactory()
 

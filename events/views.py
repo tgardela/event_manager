@@ -15,7 +15,7 @@ class EventViewSet(ModelViewSet):
     queryset = Event.objects.all()
     permission_classes = [IsAuthenticated]
 
-    # filles 'created_by' field with the user that creates the object
+    # fills 'created_by' field with the user that creates the object
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
@@ -29,6 +29,7 @@ class EventViewSet(ModelViewSet):
 
         return super().update(request, *args, **kwargs)
 
+    # registration endpoint
     @action(detail=True, methods=['post'])
     def register(self, request, pk=None):
         event = self.get_object()
@@ -50,6 +51,7 @@ class EventViewSet(ModelViewSet):
 
         return Response(response_data)
 
+    # de-registration endpoint
     @action(detail=True, methods=['post'])
     def unregister(self, request, pk=None):
         event = self.get_object()
