@@ -1,5 +1,29 @@
 # Event Manager
-Django and DRF app for managing events
+Django and DRF app for managing events. It should allow users to create a personal account, log in, and create, edit, 
+fetch, and register to attend events. Each event should have at least a name, a description, a start date and end date 
+and a list of attendees.
+
+Main features of the project:
+- A system of token rotation is implemented. For this the API provides a user with access_token and a refresh_token, 
+as well as a way to refresh and validate the access_token. The lifetime of the access_token is 1 hour and the lifetime 
+of the refresh_token 1 day
+- API docs (swagger or other)
+- tests
+- Users are able to register an account
+- Users are able to log in into their account
+- Users are able to create events in the app's database (slqlite)
+- Users are able to see the list of events they have created
+- Users are able to see a list of all events
+- Users are able to edit the events they have created but not the ones created by other users
+- Users are able to register to an event or un-register. This can only be done in future events and not in past events.
+- Logic to manage an event capacity: if event reaches maximum number of registered attendees, an error is be returned 
+to a user trying to register
+
+Things that this project does not implement:
+- Documentation of the code
+- Filtering to endpoints retrieving events (e.g. date , type, status, past events, future events, etc)
+- Frontend to consume the API
+
 
 ## SetUp
 
@@ -12,45 +36,34 @@ After creating the virtual env and activating it please install all the requirem
 pip install -r requirements.txt
 ```
 
+Creating DB migrations:
 
+```bash
+python manage.py makemigrations
+```
 
-The task consists in creating a Rest API using Django rest framework https://www.django-rest-framework.org/to create an 
-Event manager app. It should allow users to create a personal account, log in, and create, edit, fetch, and register to 
-attend events. Each event should have at least a name, a description, a start date and end date and a list of attendees.
+Running migrations created in the preceding step:
 
-Required features:
+```bash
+python manage.py migrate
+```
 
-DONE    - Users must be able to register an account
+Creating superuser for the app:
 
-DONE    - Users must be able to log in into their account
+```bash
+python manage.py createsuperuser
+```
 
-DONE    - A system of token rotation must be implemented. For this the API needs to provide a user with access_token and
-            a refresh_token, as well as a way to refresh and validate the access_token. The lifetime of the access_token
-            should be 1 hour and the lifetime of the refresh_token 1 day
+Running the app locally:
 
-DONE    - Users must be able to create events in the app's database (slqlite)
-
-DONE    - Users must be able to see the list of events they have created
-
-DONE    - Users must be able to see a list of all events
-
-DONE    - Users must be able to edit the events they have created but not the ones created by other users
-
-DONE    - Users must be able to register to an event or un-register. This can only be done in future events and not in past events.
-
-
-Not required but nice to have:
-
+```bash
+python manage.py runserver
+```
  
+Running tests:
 
-- Documentation of your code
+```bash
+python manage.py test
+```
 
-DONE    - API docs (swagger or other)
-
-DONE    - Tests
-
-DONE    - Add logic to manage an event capacity: if event reaches maximum number of registered attendees, an error should be returned to a user trying to register
-
-- Add some  filtering to endpoints retrieving events (e.g. date , type, status, past events, future events, etc)
-
-- Create a frontend to consume the API
+Swagger docs are available (locally with default host and port): http://127.0.0.1:8000/swagger/
