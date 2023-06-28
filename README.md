@@ -27,7 +27,7 @@ Things that this project does not implement:
 
 ## SetUp
 
-It's highly suggested that you create a virtual environment for running this app. Typical IDE's (like PyCharm) should
+Python version used to develop this project is Python 3.10.2. It's highly suggested that you create a virtual environment for running this app. Typical IDE's (like PyCharm) should
 help you do this automatically.
 
 After creating the virtual env and activating it please install all the requirements:
