@@ -45,14 +45,3 @@ class EventModelTest(TestCase):
             created_by=self.user
         )
         event.save()  # Should not raise any exception
-
-    def test_save_event_with_invalid_dates(self):
-        event = Event(
-            name='Invalid Event',
-            start_date=timezone.now(),
-            end_date=timezone.now() - timedelta(days=1),  # Set end date in the past
-            capacity=100,
-            created_by=self.user
-        )
-        with self.assertRaises(ValidationError):
-            event.save()

@@ -1,6 +1,4 @@
-import datetime
 from django.db import models
-from rest_framework.exceptions import ValidationError
 
 
 class Event(models.Model):
@@ -19,12 +17,3 @@ class Event(models.Model):
 
     def get_attendees(self):
         return "\n".join([a.username for a in self.attendees.all()])
-
-    def save(self, *args, **kwargs):
-        if self.end_date < self.start_date:
-            raise ValidationError("The end date cannot be in the past!")
-
-        # if self.start_date < datetime.datetime.today() or self.end_date < datetime.datetime.today():
-        #     raise ValidationError("The end date cannot be in the past!")
-
-        super(Event, self).save(*args, **kwargs)

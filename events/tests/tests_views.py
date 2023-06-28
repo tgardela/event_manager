@@ -1,22 +1,31 @@
 from datetime import datetime, timedelta
 from django.contrib.auth.models import User
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import (
+    APIClient,
+    APIRequestFactory,
+    APITestCase,
+    force_authenticate,
+    )
 
 from events.models import Event
+from events.views import EventViewSet
 
 
 class EventViewSetTest(APITestCase):
     def setUp(self):
+        self.factory = APIRequestFactory()
         self.user = User.objects.create(username='testuser')
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
         self.event = Event.objects.create(
             name='Test Event',
-            start_date='2023-01-01',
-            end_date='2023-01-02',
+            start_date=datetime.now(),
+            end_date=datetime.now() + timedelta(hours=2),
             capacity=100,
             created_by=self.user
         )
+        self.url = f'/events/{self.event.pk}/'
+        self.viewset = EventViewSet
 
     def test_retrieve_event(self):
         response = self.client.get(f'/events/{self.event.pk}/')
@@ -69,3 +78,67 @@ class EventViewSetTest(APITestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.data['detail'], 'To update an event, you must be the creator of that event.')
 
+    def test_register_endpoint(self):
+        self.request = self.factory.post(f'{self.url}register/')
+        force_authenticate(self.request, user=self.user)
+        response = self.viewset.as_view({'post': 'register'})(self.request, pk=self.event.pk)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['event_id'], self.event.pk)
+        self.assertEqual(response.data['user_id'], self.user.id)
+        self.assertIn('message', response.data)
+
+        if self.event.attendees.count() == self.event.capacity:
+            self.assertEqual(response.data['message'], 'The attendance list for this event is full. You cannot register at this time.')
+
+        elif self.event.start_date < datetime.now():
+            self.assertEqual(response.data['message'], 'The event has already started, you cannot register to it.')
+
+        else:
+            self.event.refresh_from_db()
+            self.assertEqual(response.data['message'], f'Registered user: {self.user.id} for event: {self.event.pk}')
+            self.assertIn(self.user, self.event.attendees.all())
+
+    def test_unregister_endpoint(self):
+        self.event.attendees.add(self.user)
+        self.event.save()
+
+        self.request = self.factory.post(f'{self.url}unregister/')
+        force_authenticate(self.request, user=self.user)
+        response = self.viewset.as_view({'post': 'unregister'})(self.request, pk=self.event.pk)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['event_id'], self.event.pk)
+        self.assertEqual(response.data['user_id'], self.user.id)
+        self.assertEqual(response.data['message'], f'Unregistered user: {self.user.id} for event: {self.event.pk}')
+        self.event.refresh_from_db()
+        self.assertNotIn(self.user, self.event.attendees.all())
+
+    def test_register_endpoint_full_attendance(self):
+        self.event.capacity = 0
+        self.event.save()
+
+        self.request = self.factory.post(f'{self.url}register/')
+        force_authenticate(self.request, user=self.user)
+        response = self.viewset.as_view({'post': 'register'})(self.request, pk=self.event.pk)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['event_id'], self.event.pk)
+        self.assertEqual(response.data['user_id'], self.user.id)
+        self.assertEqual(response.data['message'], 'The attendance list for this event is full. You cannot register at this time.')
+        self.event.refresh_from_db()
+        self.assertNotIn(self.user, self.event.attendees.all())
+
+    def test_register_endpoint_event_started(self):
+        self.event.start_date = datetime.now()
+        self.event.save()
+
+        self.request = self.factory.post(f'{self.url}register/')
+        force_authenticate(self.request, user=self.user)
+
+        response = self.viewset.as_view({'post': 'register'})(self.request, pk=self.event.pk)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['event_id'], self.event.pk)
+        self.assertEqual(response.data['user_id'], self.user.id)
+        self.assertEqual(response.data['message'], 'The event has already started, you cannot register to it.')

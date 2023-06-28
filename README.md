@@ -36,7 +36,7 @@ DONE    - Users must be able to see a list of all events
 
 DONE    - Users must be able to edit the events they have created but not the ones created by other users
 
-- Users must be able to register to an event or un-register. This can only be done in future events and not in past events.
+DONE    - Users must be able to register to an event or un-register. This can only be done in future events and not in past events.
 
 
 Not required but nice to have:
@@ -47,9 +47,9 @@ Not required but nice to have:
 
 DONE    - API docs (swagger or other)
 
-- Tests
+DONE    - Tests
 
-- Add logic to manage an event capacity: if event reaches maximum number of registered attendees, an error should be returned to a user trying to register
+DONE    - Add logic to manage an event capacity: if event reaches maximum number of registered attendees, an error should be returned to a user trying to register
 
 - Add some  filtering to endpoints retrieving events (e.g. date , type, status, past events, future events, etc)
 
