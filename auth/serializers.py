@@ -15,10 +15,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'created_events']
 
 
-    def get_events(self, obj):
-        user_events = obj.eve
-
-
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     @classmethod

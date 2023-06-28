@@ -11,7 +11,7 @@ from events.views import EventViewSet
 
 
 router = DefaultRouter()
-router.register(r'event', EventViewSet, basename='Event')
+router.register(r'events', EventViewSet, basename='Events')
 
 schema_view = get_schema_view(
     openapi.Info(
