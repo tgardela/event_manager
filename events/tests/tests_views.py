@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from django.contrib.auth.models import User
+import pytz
 from rest_framework.test import (
     APIClient,
     APIRequestFactory,
@@ -19,8 +20,8 @@ class EventViewSetTest(APITestCase):
         self.client.force_authenticate(user=self.user)
         self.event = Event.objects.create(
             name='Test Event',
-            start_date=datetime.now(),
-            end_date=datetime.now() + timedelta(hours=2),
+            start_date=datetime.utcnow().replace(tzinfo=pytz.utc),
+            end_date=(datetime.utcnow().replace(tzinfo=pytz.utc) + timedelta(hours=2)).isoformat(),
             capacity=100,
             created_by=self.user
         )
@@ -89,9 +90,9 @@ class EventViewSetTest(APITestCase):
         self.assertIn('message', response.data)
 
         if self.event.attendees.count() == self.event.capacity:
-            self.assertEqual(response.data['message'], 'The attendance list for this event is full. You cannot register at this time.')
+            self.assertEqual(response.data['message'], 'The attendance list for this event is full. You cannot register at this time.')  # noqa
 
-        elif self.event.start_date < datetime.now():
+        elif self.event.start_date < datetime.utcnow().replace(tzinfo=pytz.utc):
             self.assertEqual(response.data['message'], 'The event has already started, you cannot register to it.')
 
         else:
@@ -125,12 +126,12 @@ class EventViewSetTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['event_id'], self.event.pk)
         self.assertEqual(response.data['user_id'], self.user.id)
-        self.assertEqual(response.data['message'], 'The attendance list for this event is full. You cannot register at this time.')
+        self.assertEqual(response.data['message'], 'The attendance list for this event is full. You cannot register at this time.')  # noqa
         self.event.refresh_from_db()
         self.assertNotIn(self.user, self.event.attendees.all())
 
     def test_register_endpoint_event_started(self):
-        self.event.start_date = datetime.now()
+        self.event.start_date = datetime.utcnow().replace(tzinfo=pytz.utc)
         self.event.save()
 
         self.request = self.factory.post(f'{self.url}register/')

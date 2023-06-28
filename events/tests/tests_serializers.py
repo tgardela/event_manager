@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.test import TestCase
+import pytz
+
 from events.models import Event
 from events.serializers import EventSerializer
 
@@ -10,8 +12,8 @@ class EventSerializerTest(TestCase):
         self.user = User.objects.create(username='testuser')
         self.event = Event.objects.create(
             name='Test Event',
-            start_date=datetime.now(),
-            end_date=datetime.now() + timedelta(days=1),
+            start_date=datetime.utcnow().replace(tzinfo=pytz.utc),
+            end_date=(datetime.utcnow().replace(tzinfo=pytz.utc) + timedelta(days=1)).isoformat(),
             capacity=100,
             created_by=self.user
         )
