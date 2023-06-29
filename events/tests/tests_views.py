@@ -1,6 +1,12 @@
-from datetime import datetime, timedelta
+from datetime import (
+    datetime,
+    timedelta,
+    )
 from django.contrib.auth.models import User
+from django.urls import reverse
+from django.utils import timezone
 import pytz
+from rest_framework import status
 from rest_framework.test import (
     APIClient,
     APIRequestFactory,
@@ -145,3 +151,76 @@ class EventViewSetTest(APITestCase):
         self.assertEqual(response.data['message'], f'Unregistered user: {self.user.id} for event: {self.event.pk}')
         self.event.refresh_from_db()
         self.assertNotIn(self.user, self.event.attendees.all())
+
+    def test_filter_by_date(self):
+        Event.objects.create(
+            name='Event 1',
+            start_date=datetime.strptime('2023-03-05', '%Y-%m-%d').replace(tzinfo=pytz.utc),
+            end_date=datetime.strptime('2023-03-05', '%Y-%m-%d').replace(tzinfo=pytz.utc),
+            capacity=10,
+            created_by=self.user
+            )
+        Event.objects.create(
+            name='Event 2',
+            start_date=datetime.strptime('2023-03-02', '%Y-%m-%d').replace(tzinfo=pytz.utc),
+            end_date=datetime.strptime('2023-03-02', '%Y-%m-%d').replace(tzinfo=pytz.utc),
+            capacity=10,
+            created_by=self.user
+            )
+        response = self.client.get(reverse('Events-list'), {'date': '2023-03-05'})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], 'Event 1')
+
+    def test_filter_past_events(self):
+        Event.objects.create(
+            name='Event 1',
+            start_date=datetime.strptime('2023-03-05', '%Y-%m-%d').replace(tzinfo=pytz.utc),
+            end_date=datetime.strptime('2023-03-06', '%Y-%m-%d').replace(tzinfo=pytz.utc),
+            capacity=10,
+            created_by=self.user
+            )
+        Event.objects.create(
+            name='Event 2',
+            start_date=(datetime.utcnow().replace(tzinfo=pytz.utc) + timezone.timedelta(days=1)).isoformat(),
+            end_date=(datetime.utcnow().replace(tzinfo=pytz.utc) + timezone.timedelta(days=1, hours=1)).isoformat(),
+            capacity=10,
+            created_by=self.user
+            )
+
+        response = self.client.get(reverse('Events-list'), {'past': 'true'})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0]['name'], 'Test Event')
+        self.assertEqual(response.data[1]['name'], 'Event 1')
+
+    def test_filter_future_events(self):
+        Event.objects.create(
+            name='Event 1',
+            start_date=datetime.utcnow().replace(tzinfo=pytz.utc).isoformat(),
+            end_date=(datetime.utcnow().replace(tzinfo=pytz.utc) + timezone.timedelta(hours=1)).isoformat(),
+            capacity=10,
+            created_by=self.user
+            )
+        Event.objects.create(
+            name='Event 2',
+            start_date=(datetime.utcnow().replace(tzinfo=pytz.utc) + timezone.timedelta(days=1)).isoformat(),
+            end_date=(datetime.utcnow().replace(tzinfo=pytz.utc) + timezone.timedelta(days=1, hours=1)).isoformat(),
+            capacity=10,
+            created_by=self.user
+            )
+        Event.objects.create(
+            name='Event 3',
+            start_date=(datetime.utcnow().replace(tzinfo=pytz.utc) - timezone.timedelta(days=2)).isoformat(),
+            end_date=(datetime.utcnow().replace(tzinfo=pytz.utc) + timezone.timedelta(days=2, hours=1)).isoformat(),
+            capacity=10,
+            created_by=self.user
+            )
+
+        response = self.client.get(reverse('Events-list'), {'future': 'true'})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['name'], 'Event 2')

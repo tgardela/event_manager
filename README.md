@@ -16,12 +16,13 @@ of the refresh_token 1 day
 - Users are able to see a list of all events
 - Users are able to edit the events they have created but not the ones created by other users
 - Users are able to register to an event or un-register. This can only be done in future events and not in past events.
-- Logic to manage an event capacity: if event reaches maximum number of registered attendees, an error is be returned 
+- Logic to manage an event capacity: if event reaches maximum number of registered attendees, an error is to be returned 
 to a user trying to register
+- Filtering to endpoints retrieving events (e.g. date, past events, future events)
+
 
 Things that this project does not implement:
 - Documentation of the code
-- Filtering to endpoints retrieving events (e.g. date , type, status, past events, future events, etc)
 - Frontend to consume the API
 
 
