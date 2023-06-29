@@ -30,14 +30,14 @@ class EventSerializerTest(TestCase):
     def test_serializer_validates_end_date_before_start_date(self):
         serializer = EventSerializer(data={
             'name': 'Invalid Event',
-            'start_date': datetime.now().isoformat(),
-            'end_date': (datetime.now() - timedelta(days=1)).isoformat(),
+            'start_date': (datetime.now() + timedelta(days=3)).isoformat(),
+            'end_date': (datetime.now() + timedelta(days=2)).isoformat(),
             'capacity': 50
         })
 
         self.assertFalse(serializer.is_valid())
         self.assertIn('non_field_errors', serializer.errors)
-        self.assertEqual(serializer.errors['non_field_errors'][0], "Event can't start in the past.")
+        self.assertEqual(serializer.errors['non_field_errors'][0], "Event can't end before it starts.")
 
     def test_serializer_validates_start_date_not_in_the_past(self):
         serializer = EventSerializer(data={

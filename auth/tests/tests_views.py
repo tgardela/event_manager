@@ -17,6 +17,7 @@ class MyObtainTokenPairViewTestCase(TestCase):
         request = factory.post(self.url, {'username': 'testuser', 'password': 'testpassword'})
         view = MyObtainTokenPairView.as_view()
         response = view(request)
+
         self.assertEqual(response.status_code, 200)
         self.assertIn('access', response.data)
         self.assertIn('refresh', response.data)
@@ -46,6 +47,7 @@ class RegisterViewTestCase(TestCase):
         request = factory.post(self.url, self.valid_payload)
         view = RegisterView.as_view()
         response = view(request)
+
         self.assertEqual(response.status_code, 201)
         self.assertEqual(User.objects.count(), 1)
 
@@ -53,6 +55,7 @@ class RegisterViewTestCase(TestCase):
         request = factory.post(self.url, self.invalid_payload)
         view = RegisterView.as_view()
         response = view(request)
+
         self.assertEqual(response.status_code, 400)
         self.assertEqual(User.objects.count(), 0)
 
@@ -66,6 +69,7 @@ class UserViewTestCase(TestCase):
         request = factory.get(self.url)
         view = UserView.as_view({'get': 'list'})
         response = view(request)
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['username'], 'testuser')
@@ -74,5 +78,6 @@ class UserViewTestCase(TestCase):
         request = factory.get(f'{self.url}{self.user.id}/')
         view = UserView.as_view({'get': 'retrieve'})
         response = view(request, pk=self.user.id)
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['username'], 'testuser')

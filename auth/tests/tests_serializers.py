@@ -29,10 +29,12 @@ class UserSerializerTestCase(TestCase):
 
     def test_serializer_contains_expected_fields(self):
         data = self.serializer.data
+
         self.assertEqual(set(data.keys()), {'id', 'username', 'email', 'created_events'})
 
     def test_created_events_field_contains_expected_data(self):
         data = self.serializer.data
+
         self.assertEqual(data['created_events'], [self.event1.id, self.event2.id])
 
 
@@ -64,10 +66,12 @@ class RegisterSerializerTestCase(TestCase):
     def test_serializer_validates_passwords_match(self):
         self.serializer_data['password2'] = 'differentpassword'
         serializer = RegisterSerializer(data=self.serializer_data)
+
         self.assertFalse(serializer.is_valid(), msg=serializer.errors)
         self.assertIn('password', serializer.errors)
 
     def test_serializer_validates_email_uniqueness(self):
         User.objects.create(username='existinguser', email='test@example.com')
+
         self.assertFalse(self.serializer.is_valid(), msg=self.serializer.errors)
         self.assertIn('email', self.serializer.errors)

@@ -82,6 +82,7 @@ class EventViewSetTest(APITestCase):
     def test_register_endpoint(self):
         self.request = self.factory.post(f'{self.url}register/')
         force_authenticate(self.request, user=self.user)
+
         response = self.viewset.as_view({'post': 'register'})(self.request, pk=self.event.pk)
 
         self.assertEqual(response.status_code, 200)
@@ -99,21 +100,6 @@ class EventViewSetTest(APITestCase):
             self.event.refresh_from_db()
             self.assertEqual(response.data['message'], f'Registered user: {self.user.id} for event: {self.event.pk}')
             self.assertIn(self.user, self.event.attendees.all())
-
-    def test_unregister_endpoint(self):
-        self.event.attendees.add(self.user)
-        self.event.save()
-
-        self.request = self.factory.post(f'{self.url}unregister/')
-        force_authenticate(self.request, user=self.user)
-        response = self.viewset.as_view({'post': 'unregister'})(self.request, pk=self.event.pk)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['event_id'], self.event.pk)
-        self.assertEqual(response.data['user_id'], self.user.id)
-        self.assertEqual(response.data['message'], f'Unregistered user: {self.user.id} for event: {self.event.pk}')
-        self.event.refresh_from_db()
-        self.assertNotIn(self.user, self.event.attendees.all())
 
     def test_register_endpoint_full_attendance(self):
         self.event.capacity = 0
@@ -143,3 +129,19 @@ class EventViewSetTest(APITestCase):
         self.assertEqual(response.data['event_id'], self.event.pk)
         self.assertEqual(response.data['user_id'], self.user.id)
         self.assertEqual(response.data['message'], 'The event has already started, you cannot register to it.')
+
+    def test_unregister_endpoint(self):
+        self.event.attendees.add(self.user)
+        self.event.save()
+
+        self.request = self.factory.post(f'{self.url}unregister/')
+        force_authenticate(self.request, user=self.user)
+
+        response = self.viewset.as_view({'post': 'unregister'})(self.request, pk=self.event.pk)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['event_id'], self.event.pk)
+        self.assertEqual(response.data['user_id'], self.user.id)
+        self.assertEqual(response.data['message'], f'Unregistered user: {self.user.id} for event: {self.event.pk}')
+        self.event.refresh_from_db()
+        self.assertNotIn(self.user, self.event.attendees.all())
